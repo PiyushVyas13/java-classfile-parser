@@ -42,8 +42,17 @@ public class MethodBuilder extends BaseAttributeBuilder<Method> {
 
 
             String[] list = params.split(";");
+            for(String str : list) {
+                if(str.indexOf('<') != -1 && !str.endsWith(">")) {
+                    str = str + '>';
+                }
+            }
+
             for (String str : list) {
                 if (!str.isEmpty()) {
+                    if(str.equals(">")) {
+                        continue;
+                    }
                     String param = parseType(str + ";");
                     parameters.add(param);
                 }

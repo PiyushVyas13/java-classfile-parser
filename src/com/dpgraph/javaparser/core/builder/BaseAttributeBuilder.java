@@ -33,7 +33,10 @@ public abstract class BaseAttributeBuilder<T> implements AttributeBuilder<T> {
 
     protected String parseDescriptor(FieldOrMethodInfo poolEntry) {
         if(poolEntry.getSignature() != null) {
-            return (String) constantPool[poolEntry.getSignature().getValue()[1]].getValue();
+            if(poolEntry.getSignature().getValue()[1] > 0) {
+                return (String) constantPool[poolEntry.getSignature().getValue()[1]].getValue();
+            }
+            return "unknown signature";
         } else {
             return (String) constantPool[poolEntry.getDescriptorIndex()].getValue();
         }
@@ -103,7 +106,23 @@ public abstract class BaseAttributeBuilder<T> implements AttributeBuilder<T> {
                 result.append(c);
             }
         }
-
         return result.toString().replace('/', '.');
     }
+
+    private int findGenericEnd(String descriptor, int start) {
+        int depth = 1;
+        for (int i = start; i < descriptor.length(); i++) {
+            if (descriptor.charAt(i) == '<') {
+                depth++;
+            } else if (descriptor.charAt(i) == '>') {
+                depth--;
+                if (depth == 0) {
+                    return i;
+                }
+            }
+        }
+        throw new IllegalArgumentException("Unmatched generic type brackets");
+    }
+
+
 }

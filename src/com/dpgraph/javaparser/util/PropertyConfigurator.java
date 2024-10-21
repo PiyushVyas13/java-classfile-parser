@@ -1,10 +1,9 @@
 package com.dpgraph.javaparser.util;
 
+import com.dpgraph.javaparser.core.JavaPackage;
+
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class PropertyConfigurator {
     private final Properties properties;
@@ -53,6 +52,23 @@ public class PropertyConfigurator {
                     String name = tokenizer.nextToken().trim();
                     packages.add(name);
                 }
+            }
+        }
+
+        return packages;
+    }
+
+    public List<JavaPackage> getConfiguredPackages() {
+        List<JavaPackage> packages = new ArrayList<>();
+
+        Enumeration<?> enumeration = properties.propertyNames();
+
+        while (enumeration.hasMoreElements()) {
+            String key = (String) enumeration.nextElement();
+
+            if(!key.startsWith("ignore")) {
+                String path = properties.getProperty(key);
+                packages.add(new JavaPackage(path));
             }
         }
 
