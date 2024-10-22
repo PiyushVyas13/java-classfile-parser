@@ -1,5 +1,6 @@
 package com.dpgraph.javaparser.core.builder;
 
+import com.dpgraph.javaparser.parser.AttributeInfo;
 import com.dpgraph.javaparser.parser.Constant;
 import com.dpgraph.javaparser.parser.FieldOrMethodInfo;
 import com.dpgraph.javaparser.util.Modifier;
@@ -33,10 +34,16 @@ public abstract class BaseAttributeBuilder<T> implements AttributeBuilder<T> {
 
     protected String parseDescriptor(FieldOrMethodInfo poolEntry) {
         if(poolEntry.getSignature() != null) {
-            if(poolEntry.getSignature().getValue()[1] > 0) {
-                return (String) constantPool[poolEntry.getSignature().getValue()[1]].getValue();
-            }
-            return "unknown signature";
+
+            byte[] signatureValue = poolEntry.getSignature().getValue();
+
+            int b0 = signatureValue[0] < 0 ? signatureValue[0]+256 : signatureValue[0];
+            int b1 = signatureValue[1] < 0 ? signatureValue[1]+256 : signatureValue[1];
+
+            int poolEntryIndex = b0 * 256 + b1;
+
+
+            return (String) constantPool[poolEntryIndex].getValue();
         } else {
             return (String) constantPool[poolEntry.getDescriptorIndex()].getValue();
         }

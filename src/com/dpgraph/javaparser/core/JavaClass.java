@@ -1,9 +1,6 @@
 package com.dpgraph.javaparser.core;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 
 public class JavaClass {
@@ -17,6 +14,8 @@ public class JavaClass {
     private String signature;
     private final List<Field> fields;
     private final List<Method> methods;
+    private Set<String> outGoingDependencies;
+    private Set<String> incomingDependencies;
 
 
 
@@ -29,12 +28,18 @@ public class JavaClass {
         signature = "default";
         fields = new ArrayList<>();
         methods = new ArrayList<>();
+        outGoingDependencies = Collections.synchronizedSet(new HashSet<>());
+        incomingDependencies = Collections.synchronizedSet(new HashSet<>());
         isFinal = false;
         isInterface = false;
     }
 
     public void setName(String className) {
         this.className = className;
+    }
+
+    public void setOutGoingDependencies(Set<String> outGoingDependencies) {
+        this.outGoingDependencies = outGoingDependencies;
     }
 
     public String getName() {
@@ -103,6 +108,10 @@ public class JavaClass {
         this.signature = signature;
     }
 
+    public Set<String> getOutGoingDependencies() {
+        return outGoingDependencies;
+    }
+
     public boolean isFinal() {
         return isFinal;
     }
@@ -121,6 +130,14 @@ public class JavaClass {
 
     public List<Method> getMethods() {
         return methods;
+    }
+
+    public Set<String> getIncomingDependencies() {
+        return incomingDependencies;
+    }
+
+    public void setIncomingDependencies(Set<String> incomingDependencies) {
+        this.incomingDependencies = incomingDependencies;
     }
 
     public static class ClassComparator implements Comparator<JavaClass> {
@@ -142,6 +159,8 @@ public class JavaClass {
                 ", isFinal='" + isFinal + '\'' +
                 ", fields=" + fields +
                 ", methods=" + methods +
+                ", outGoingDependencies=" + outGoingDependencies +
+                ", inComingDependencies=" + incomingDependencies +
                 '}';
     }
 }

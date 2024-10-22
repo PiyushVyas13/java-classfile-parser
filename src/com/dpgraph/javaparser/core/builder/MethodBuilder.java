@@ -58,6 +58,8 @@ public class MethodBuilder extends BaseAttributeBuilder<Method> {
                 }
             }
 
+        } else {
+            System.out.println("GELLO WORLD");
         }
 
         return new Method(modifier, isStatic, isFinal, isAbstract, name, parameters, returnType);

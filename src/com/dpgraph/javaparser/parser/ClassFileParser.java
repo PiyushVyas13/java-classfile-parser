@@ -78,9 +78,16 @@ public class ClassFileParser extends Parser {
 
         addClassConstantReferences();
 
+        addDependencies();
+
         addAnnotationsReferences();
 
         return javaClass;
+    }
+
+    private void addDependencies() {
+        DependencyExtractor extractor = new DependencyExtractor();
+        javaClass.setOutGoingDependencies(extractor.extract(javaClass));
     }
 
     private void addClassConstantReferences() throws IOException {

@@ -6,6 +6,7 @@ import com.dpgraph.javaparser.util.FileManager;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ClassBuilder {
     private final Parser parser;
@@ -35,7 +36,6 @@ public class ClassBuilder {
     }
 
     public List<JavaClass> buildClasses(File file) throws IOException {
-
         if(fileManager.acceptFile(file)) {
 
             try (InputStream is = new BufferedInputStream(new FileInputStream(file))) {
@@ -48,6 +48,12 @@ public class ClassBuilder {
         }
 
         throw new FileNotFoundException(file.getAbsolutePath());
+    }
+
+    public ConcurrentHashMap<String, JavaClass> buildGraph(File directory) throws InterruptedException, IOException {
+        int numThreads = Runtime.getRuntime().availableProcessors();
+        ConcurrentParser concurrentParser = new ConcurrentParser(numThreads);
+        return concurrentParser.parseClassFiles(directory);
     }
 
     public int countClasses() {
