@@ -3,7 +3,7 @@ package com.dpgraph.javaparser.core;
 import java.util.*;
 
 
-public class JavaClass {
+public class JavaClass implements JavaElement{
     private String className;
     private String packageName;
     private boolean isAbstract;
@@ -44,6 +44,26 @@ public class JavaClass {
 
     public String getName() {
         return className;
+    }
+
+    @Override
+    public void addElement(JavaElement element) {
+        throw new UnsupportedOperationException("The element is not a valid Java Package");
+    }
+
+    @Override
+    public List<JavaElement> getElements() {
+        return List.of();
+    }
+
+    @Override
+    public boolean isClass() {
+        return true;
+    }
+
+    @Override
+    public boolean isPackage() {
+        return false;
     }
 
     public void addField(Field field) {

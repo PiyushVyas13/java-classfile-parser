@@ -1,6 +1,7 @@
 package com.dpgraph.javaparser;
 
 import com.dpgraph.javaparser.core.JavaClass;
+import com.dpgraph.javaparser.core.JavaElement;
 import com.dpgraph.javaparser.core.JavaPackage;
 import com.dpgraph.javaparser.parser.ClassBuilder;
 import com.dpgraph.javaparser.parser.ClassFileParser;
@@ -40,7 +41,7 @@ public class Driver {
                     packageMap.put(packageName, new JavaPackage(packageName));
                 }
 
-                packageMap.get(packageName).addClass(javaClass);
+                packageMap.get(packageName).addElement(javaClass);
             } else {
                 System.out.println(javaClass);
             }
@@ -49,17 +50,74 @@ public class Driver {
         return new ArrayList<>(packageMap.values());
     }
 
+    public static JavaElement buildHierarchy(final List<JavaClass> classes) {
+        Map<String, JavaPackage> packageMap = new HashMap<>();
+        JavaPackage root = new JavaPackage("root");
+        packageMap.put("", root);
+
+        for(JavaClass javaClass : classes) {
+            if (!(javaClass instanceof ConcurrentParser.PlaceholderJavaClass)) {
+                String[] packageParts = javaClass.getPackageName().split("\\.");
+                String currentPath = "";
+                JavaPackage currentPackage = root;
+
+                for(String part : packageParts) {
+                    String newPath = currentPath.isEmpty() ? part : "." + part;
+                    JavaPackage newPackage = packageMap.get(newPath);
+
+                    if(newPackage == null) {
+                        newPackage = new JavaPackage(newPath);
+                        packageMap.put(newPackage.getName(), newPackage);
+                        currentPackage.addElement(newPackage);
+                    }
+
+                    currentPackage = newPackage;
+                    currentPath = newPath;
+                }
+
+                currentPackage.addElement(javaClass);
+
+            } else {
+                System.out.println(javaClass);
+            }
+
+        }
+
+        if(root.getElements().size() == 1 && root.getElements().get(0).isPackage()) {
+            return root.getElements().get(0);
+        }
+
+        return root;
+    }
+
+    public static void printHierarchy(JavaElement element, String indent) {
+        System.out.println(indent + element.getName() +
+                (element.isPackage() ? " (Package)" : " (Class)"));
+
+        if(element.isPackage()) {
+            for (JavaElement child : element.getElements()) {
+                printHierarchy(child, indent + "  ");
+            }
+        }
+
+    }
+
     public static void analyzeAsync(File classFileDirectory) throws InterruptedException, IOException {
         long startTime = System.currentTimeMillis();
         System.out.println("Parsing files...");
         ConcurrentHashMap<String, JavaClass> repo = classBuilder.buildGraph(classFileDirectory);
-        List<JavaPackage> packages = transformClasses(new ArrayList<>(repo.values()));
 
-        for(JavaPackage javaPackage : packages) {
-            System.out.println(javaPackage);
-        }
+//        List<JavaPackage> packages = transformClasses(new ArrayList<>(repo.values()));
+//
+//        for(JavaPackage javaPackage : packages) {
+//            System.out.println(javaPackage);
+//        }
 
-        writeToJson(packages);
+        JavaElement element = buildHierarchy(new ArrayList<>(repo.values()));
+        printHierarchy(element, "");
+
+        writeToJson(element);
+
         long endTime = System.currentTimeMillis();
 
         double time = (double) (endTime - startTime) / 1000;
@@ -67,7 +125,7 @@ public class Driver {
 
     }
 
-    public static void writeToJson(List<JavaPackage> packages) {
+    public static void writeToJson(Object packages) {
         ObjectMapper mapper = new ObjectMapper();
 
         try {
@@ -98,6 +156,7 @@ public class Driver {
 
         try {
             analyzeAsync(directory);
+            // analyzeAsync(new File("."));
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -1,38 +1,62 @@
 package com.dpgraph.javaparser.core;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
-public class JavaPackage {
+public class JavaPackage implements JavaElement{
     private final String name;
-    private final HashSet<JavaClass> classes;
+    private final List<JavaElement> elements;
+
 
 
     public JavaPackage(String name) {
         this.name = name;
-        classes = new HashSet<>();
+        elements = new ArrayList<>();
     }
 
     public String getName() {
         return name;
     }
 
-    public void addClass(JavaClass javaClass) {
-        classes.add(javaClass);
+    @Override
+    public void addElement(JavaElement element) {
+        if(elements.contains(element)) {
+            return;
+        }
+        elements.add(element);
     }
 
-    public HashSet<JavaClass> getClasses() {
-        return classes;
+    @Override
+    public List<JavaElement> getElements() {
+        return elements;
+    }
+
+    @Override
+    public boolean isClass() {
+        return false;
+    }
+
+    @Override
+    public boolean isPackage() {
+        return true;
     }
 
     public int getClassCount() {
-        return classes.size();
+        int count = 0;
+        for(JavaElement element : elements) {
+            if(element.isClass()) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public int getAbstractClassCount() {
         int count = 0;
 
-        for(JavaClass javaClass : classes) {
-            if(javaClass.isAbstract()) {
+        for(JavaElement element : elements) {
+            if(element.isClass() && ((JavaClass) element).isAbstract()) {
                 count++;
             }
         }
@@ -43,8 +67,8 @@ public class JavaPackage {
     public int getConcreteClassCount() {
         int count = 0;
 
-        for(JavaClass javaClass : classes) {
-            if(!javaClass.isAbstract()) {
+        for(JavaElement element : elements) {
+            if(element.isClass() && !((JavaClass) element).isAbstract()) {
                 count++;
             }
         }
@@ -56,7 +80,7 @@ public class JavaPackage {
     public String toString() {
         return "com.dpgraph.parser.core.JavaPackage{" +
                 "name='" + name + '\'' +
-                ", classes=" + classes +
+                ", elements=" + elements +
                 '}';
     }
 }
